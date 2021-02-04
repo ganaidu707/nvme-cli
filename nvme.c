@@ -4008,24 +4008,54 @@ static int flush(int argc, char **argv, struct command *cmd, struct plugin *plug
 		"flushed by the controller, from any namespace, depending on controller and "\
 		"associated namespace status.";
 	const char *namespace_id = "identifier of desired namespace";
+	const char *force = "force broadcast nsid (0xffffffff) irrespective "\
+		"of the VWC field support";
 	int err, fd;
+	struct nvme_id_ctrl ctrl;
+	__u8 vwc;
 
 	struct config {
 		__u32 namespace_id;
+		int force;
 	};
 
 	struct config cfg = {
-		.namespace_id = NVME_NSID_ALL,
+		.namespace_id = 0,
+		.force = 0,
 	};
 
 	OPT_ARGS(opts) = {
 		OPT_UINT("namespace-id", 'n', &cfg.namespace_id, namespace_id),
+		OPT_FLAG("force",		 'f', &cfg.force, 		 force),
 		OPT_END()
 	};
 
 	err = fd = parse_and_open(argc, argv, desc, opts);
 	if (fd < 0)
 		goto ret;
+
+	/* backward compatiblity */
+	if (!cfg.force) {
+		err = nvme_identify_ctrl(fd, &ctrl);
+		if (err < 0) {
+			perror("identify controller");
+			goto close_fd;
+		} else if (err) {
+			fprintf(stderr, "could not identify controller\n");
+			err = -ENODEV;
+			goto close_fd;
+		}
+
+		vwc = (ctrl.vwc & 0x6) >> 1;
+		if (cfg.namespace_id == NVME_NSID_ALL) {
+			if (vwc != 0x3) {
+				fprintf(stderr, "Device \"%s\" Doesn't Support Broadcast NSID(0xffffffff), "\
+					"VWC = %#x\n", devicename, ctrl.vwc);
+				err = -EINVAL;
+				goto close_fd;
+			}
+		}
+	}
 
 	if (!cfg.namespace_id) {
 		err = cfg.namespace_id = nvme_get_nsid(fd);

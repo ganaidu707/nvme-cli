@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nvme-flush
-.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
-.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 10/20/2020
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 02/04/2021
 .\"    Manual: NVMe Manual
 .\"    Source: NVMe
 .\"  Language: English
 .\"
-.TH "NVME\-FLUSH" "1" "10/20/2020" "NVMe" "NVMe Manual"
+.TH "NVME\-FLUSH" "1" "02/04/2021" "NVMe" "NVMe Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ nvme-flush \- Flush command\&.
 .SH "SYNOPSIS"
 .sp
 .nf
-\fInvme flush\fR <device> [\-\-namespace\-id=<nsid> | \-n <nsid>]
+\fInvme flush\fR <device> [\-\-namespace\-id=<nsid> | \-n <nsid>] [\-\-force | \-f ]
 .fi
 .SH "DESCRIPTION"
 .sp
@@ -41,7 +41,12 @@ The Flush command shall commit data and metadata associated with the specified n
 .PP
 \-n <nsid>, \-\-namespace\-id=<nsid>
 .RS 4
-Specify the optional namespace id for this command\&. Defaults to 0xffffffff, indicating flush for all namespaces\&.
+Specify the desired namespace id for this command\&. Defaults to 0x0\&. if VWC supports NSID 0xffffffff, and this field given is 0xffffffff, indicating flush for all namespaces\&.
+.RE
+.PP
+\-f, \-\-force
+.RS 4
+Force flush all the namespaces irrespective of the VWC support for NSID 0xffffffff\&.
 .RE
 .SH "EXAMPLES"
 .sp
