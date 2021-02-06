@@ -1,0 +1,67 @@
+'\" t
+.\"     Title: nvme-abort
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 02/07/2021
+.\"    Manual: NVMe Manual
+.\"    Source: NVMe
+.\"  Language: English
+.\"
+.TH "NVME\-ABORT" "1" "02/07/2021" "NVMe" "NVMe Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nvme-abort \- Send Abort Command and check command aborted or not
+.SH "SYNOPSIS"
+.sp
+.nf
+\fInvme abort\fR <device> [\-\-sqid=<sqid> | \-q <sqid>]
+                      [\-\-command\-id=<cid> | \-c <cid>]
+.fi
+.SH "DESCRIPTION"
+.sp
+The Abort command is used to abort a specific command previously submitted to the Admin Submission Queue or an I/O Submission Queue\&. An Abort command is a best effort command; the command to abort may have already completed, currently be in execution, or may be deeply queued\&.
+.sp
+The <device> parameter is mandatory and may be either the NVMe character device (ex: /dev/nvme0), or a namespace block device (ex: /dev/nvme0n1)\&.
+.SH "OPTIONS"
+.PP
+\-q <sqid>, \-\-sqid=<sqid>
+.RS 4
+Specify Command ID, that was given as part of CDW0\&.CID, the default value will be 0xffff\&.
+.RE
+.PP
+\-c <cid>, \-\-command\-id=<cid>
+.RS 4
+Specify the Submisson Queue id that the command to be aborted is associated with, the default value will be 0xffff\&.
+.RE
+.SH "EXAMPLES"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+# nvme abort /dev/nvme0 \-q 0x0 \-c 0x1
+.fi
+.if n \{\
+.RE
+.\}
+.SH "NVME"
+.sp
+Part of the nvme\-user suite

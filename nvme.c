@@ -222,6 +222,52 @@ enum nvme_print_flags validate_output_format(char *format)
 	return -EINVAL;
 }
 
+static int abort_cmd(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	const char *desc = "Submit a abort command to abort the previously "\
+			"submitted command. It is abest effort command";
+	const char *command_id = "specify command id, that was given as part of CDW0.CID";
+	const char *sqid = "specify the submisson queue id that the command to be "\
+			"aborted is associated with";
+	int err, fd;
+	__u32 result;
+
+	struct config {
+		__u16   sqid;
+		__u16 	cid;
+	};
+
+	struct config cfg = {
+		.sqid = 0xffff,
+		.cid = 0xffff,		
+	};
+
+	OPT_ARGS(opts) = {
+		OPT_UINT("sqid",   	   'q', &cfg.sqid,  sqid),
+		OPT_UINT("command-id", 'c', &cfg.cid,   command_id),		
+		OPT_END()
+	};
+
+	err = fd = parse_and_open(argc, argv, desc, opts);
+	if (fd < 0)
+		goto ret;
+
+	err = nvme_abort_cmd(fd, cfg.sqid, cfg.cid, &result);
+	if (!err)
+		if (result & 0x1)
+			printf("Abort Command Failed, Command was not aborted %u\n", result);
+		else
+			printf("Abort Command Succesful, Command Successfully aborted %u\n", result);	
+	else if (err > 0)
+		nvme_show_status(err);
+	else
+		perror("abort");
+
+	close(fd);
+ret:
+	return nvme_status_to_errno(err, false);
+}
+
 static int get_smart_log(int argc, char **argv, struct command *cmd, struct plugin *plugin)
 {
 	struct nvme_smart_log smart_log;

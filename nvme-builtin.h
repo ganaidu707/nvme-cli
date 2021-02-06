@@ -19,6 +19,7 @@ COMMAND_LIST(
 	ENTRY("id-nvmset", "Send NVMe Identify NVM Set List, display structure", id_nvmset)
 	ENTRY("id-uuid", "Send NVMe Identify UUID List, display structure", id_uuid)
 	ENTRY("id-iocs", "Send NVMe Identify I/O Command Set, display structure", id_iocs)
+	ENTRY("abort", "Abort a previously submited command", abort_cmd)
 	ENTRY("create-ns", "Creates a namespace with the provided parameters", create_ns)
 	ENTRY("delete-ns", "Deletes a namespace from the controller", delete_ns)
 	ENTRY("attach-ns", "Attaches a namespace to requested controller(s)", attach_ns)

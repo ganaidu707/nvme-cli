@@ -478,6 +478,21 @@ int nvme_identify_iocs(int fd, __u16 cntid, void *data)
 	return nvme_identify(fd, 0, (cntid << 16) | NVME_ID_CNS_CSI, data);
 }
 
+int nvme_abort_cmd(int fd, __u16 sqid, __u16 cid, __u32 *result)
+{
+	int err;
+	__u32 cdw10 = sqid |  cid << 16;
+
+	struct nvme_admin_cmd cmd = {
+		.opcode		= nvme_admin_abort_cmd,
+		.cdw10		= cdw10,
+	};
+	
+	err = nvme_submit_admin_passthru(fd, &cmd);
+	*result = cmd.result;
+	return err;
+}
+
 int nvme_get_log14(int fd, __u32 nsid, __u8 log_id, __u8 lsp, __u64 lpo,
                  __u16 lsi, bool rae, __u8 uuid_ix, __u32 data_len, void *data)
 {

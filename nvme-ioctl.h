@@ -81,6 +81,7 @@ int nvme_resv_release(int fd, __u32 nsid, __u8 rtype, __u8 rrela,
 int nvme_resv_report(int fd, __u32 nsid, __u32 numd, __u32 cdw11, void *data);
 
 /* NVME_ADMIN_CMD */
+int nvme_abort_cmd(int fd, __u16 sqid, __u16 cid, __u32 *result);
 int nvme_identify13(int fd, __u32 nsid, __u32 cdw10, __u32 cdw11, void *data);
 int nvme_identify(int fd, __u32 nsid, __u32 cdw10, void *data);
 int nvme_identify_ctrl(int fd, void *data);
