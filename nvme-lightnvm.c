@@ -463,7 +463,7 @@ int lnvm_do_id_ns(int fd, int nsid, unsigned int flags)
 		else
 			show_lnvm_id_ns(&nvm_id, flags);
 	} else if (err > 0)
-		fprintf(stderr, "NVMe Status:%s(%x) NSID:%d\n",
+		fprintf(stderr, "NVMe Status:%s(%#x) NSID:%d\n",
 			nvme_status_to_string(err), err, nsid);
 	return err;
 }
@@ -525,7 +525,7 @@ int lnvm_do_chunk_log(int fd, __u32 nsid, __u32 data_len, void *data,
 	err = nvme_get_log13(fd, nsid, NVM_LID_CHUNK_INFO, 0, 0, 0,
 			false, data_len, data);
 	if (err > 0) {
-		fprintf(stderr, "NVMe Status:%s(%x) NSID:%d\n",
+		fprintf(stderr, "NVMe Status:%s(%#x) NSID:%d\n",
 			nvme_status_to_string(err), err, nsid);
 
 		goto out;
@@ -582,7 +582,7 @@ static int __lnvm_do_get_bbtbl(int fd, struct nvme_nvm_id12 *id,
 
 	err = nvme_submit_passthru(fd, NVME_IOCTL_ADMIN_CMD, nvme_cmd);
 	if (err > 0) {
-		fprintf(stderr, "NVMe Status:%s(%x)\n",
+		fprintf(stderr, "NVMe Status:%s(%#x)\n",
 			nvme_status_to_string(err), err);
 		free(bbtbl);
 		return err;
@@ -608,7 +608,7 @@ int lnvm_do_get_bbtbl(int fd, int nsid, int lunid, int chid, unsigned int flags)
 
 	err = lnvm_get_identity(fd, nsid, (struct nvme_nvm_id *)tmp);
 	if (err) {
-		fprintf(stderr, "NVMe Status:%s(%x)\n",
+		fprintf(stderr, "NVMe Status:%s(%#x)\n",
 			nvme_status_to_string(err), err);
 		return err;
 	}
@@ -650,7 +650,7 @@ static int __lnvm_do_set_bbtbl(int fd, struct ppa_addr ppa, __u8 value)
 
 	err = nvme_submit_passthru(fd, NVME_IOCTL_ADMIN_CMD, nvme_cmd);
 	if (err > 0) {
-		fprintf(stderr, "NVMe Status:%s(%x)\n",
+		fprintf(stderr, "NVMe Status:%s(%#x)\n",
 			nvme_status_to_string(err), err);
 		return err;
 	}
@@ -668,7 +668,7 @@ int lnvm_do_set_bbtbl(int fd, int nsid,
 
 	err = lnvm_get_identity(fd, nsid, (struct nvme_nvm_id *)tmp);
 	if (err) {
-		fprintf(stderr, "NVMe Status:%s(%x)\n",
+		fprintf(stderr, "NVMe Status:%s(%#x)\n",
 			nvme_status_to_string(err), err);
 		return err;
 	}

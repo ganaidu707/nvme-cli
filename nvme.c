@@ -3398,7 +3398,7 @@ static int format(int argc, char **argv, struct command *cmd, struct plugin *plu
 	else if (err != 0)
 		nvme_show_status(err);
 	else {
-		printf("Success formatting namespace:%x\n", cfg.namespace_id);
+		printf("Success formatting namespace:%#x\n", cfg.namespace_id);
 		if (cfg.lbaf != prev_lbaf){
 			if (is_chardev()) {
 				if(ioctl(fd, NVME_IOCTL_RESCAN) < 0){
@@ -4702,7 +4702,7 @@ static int submit_io(int opcode, char *command, const char *desc,
 		control |= NVME_RW_FUA;
 	if (cfg.dtype) {
 		if (cfg.dtype > 0xf) {
-			fprintf(stderr, "Invalid directive type, %x\n",
+			fprintf(stderr, "Invalid directive type, %#x\n",
 				cfg.dtype);
 			err = -EINVAL;
 			goto close_fd;
