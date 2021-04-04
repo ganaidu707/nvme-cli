@@ -239,14 +239,12 @@ static int get_smart_log(int argc, char **argv, struct command *cmd, struct plug
 			"(or optionally a namespace) in either decoded format "\
 			"(default) or binary.";
 	const char *namespace = "(optional) desired namespace";
-	const char *raw = "output in binary format";
 	const char *human_readable = "show info in readable format";
 	enum nvme_print_flags flags;
 	int err, fd;
 
 	struct config {
 		__u32 namespace_id;
-		int   raw_binary;
 		char *output_format;
 		int   human_readable;
 	};
@@ -260,7 +258,6 @@ static int get_smart_log(int argc, char **argv, struct command *cmd, struct plug
 	OPT_ARGS(opts) = {
 		OPT_UINT("namespace-id",   'n', &cfg.namespace_id,   namespace),
 		OPT_FMT("output-format",   'o', &cfg.output_format,  output_format),
-		OPT_FLAG("raw-binary",     'b', &cfg.raw_binary,     raw),
 		OPT_FLAG("human-readable", 'H', &cfg.human_readable, human_readable),
 		OPT_END()
 	};
@@ -272,8 +269,6 @@ static int get_smart_log(int argc, char **argv, struct command *cmd, struct plug
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 	if (cfg.human_readable)
 		flags |= VERBOSE;
 
@@ -533,7 +528,6 @@ ret:
 static int get_effects_log(int argc, char **argv, struct command *cmd, struct plugin *plugin)
 {
 	const char *desc = "Retrieve command effects log page and print the table.";
-	const char *raw = "show log in binary format";
 	const char *human_readable = "show log in readable format";
 	struct nvme_effects_log_page effects;
 
@@ -541,7 +535,6 @@ static int get_effects_log(int argc, char **argv, struct command *cmd, struct pl
 	enum nvme_print_flags flags;
 
 	struct config {
-		int   raw_binary;
 		int   human_readable;
 		char *output_format;
 	};
@@ -553,7 +546,6 @@ static int get_effects_log(int argc, char **argv, struct command *cmd, struct pl
 	OPT_ARGS(opts) = {
 		OPT_FMT("output-format",  'o', &cfg.output_format,  output_format),
 		OPT_FLAG("human-readable",'H', &cfg.human_readable, human_readable),
-		OPT_FLAG("raw-binary",    'b', &cfg.raw_binary,     raw),
 		OPT_END()
 	};
 
@@ -564,8 +556,6 @@ static int get_effects_log(int argc, char **argv, struct command *cmd, struct pl
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 	if (cfg.human_readable)
 		flags |= VERBOSE;
 
@@ -588,7 +578,6 @@ static int get_error_log(int argc, char **argv, struct command *cmd, struct plug
 		"error log entries from a given device "\
 		"in either decoded format (default) or binary.";
 	const char *log_entries = "number of entries to retrieve";
-	const char *raw = "dump in binary format";
 	struct nvme_error_log_page *err_log;
 	struct nvme_id_ctrl ctrl;
 	enum nvme_print_flags flags;
@@ -596,7 +585,6 @@ static int get_error_log(int argc, char **argv, struct command *cmd, struct plug
 
 	struct config {
 		__u32 log_entries;
-		int   raw_binary;
 		char *output_format;
 	};
 
@@ -608,7 +596,6 @@ static int get_error_log(int argc, char **argv, struct command *cmd, struct plug
 	OPT_ARGS(opts) = {
 		OPT_UINT("log-entries",  'e', &cfg.log_entries,   log_entries),
 		OPT_FMT("output-format", 'o', &cfg.output_format, output_format),
-		OPT_FLAG("raw-binary",   'b', &cfg.raw_binary,    raw),
 		OPT_END()
 	};
 
@@ -619,8 +606,6 @@ static int get_error_log(int argc, char **argv, struct command *cmd, struct plug
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	if (!cfg.log_entries) {
 		fprintf(stderr, "non-zero log-entries is required param\n");
@@ -664,13 +649,11 @@ static int get_fw_log(int argc, char **argv, struct command *cmd, struct plugin 
 {
 	const char *desc = "Retrieve the firmware log for the "\
 		"specified device in either decoded format (default) or binary.";
-	const char *raw = "use binary output";
 	struct nvme_firmware_log_page fw_log;
 	enum nvme_print_flags flags;
 	int err, fd;
 
 	struct config {
-		int raw_binary;
 		char *output_format;
 	};
 
@@ -680,7 +663,6 @@ static int get_fw_log(int argc, char **argv, struct command *cmd, struct plugin 
 
 	OPT_ARGS(opts) = {
 		OPT_FMT("output-format", 'o', &cfg.output_format, output_format),
-		OPT_FLAG("raw-binary",   'b', &cfg.raw_binary,    raw),
 		OPT_END()
 	};
 
@@ -691,8 +673,6 @@ static int get_fw_log(int argc, char **argv, struct command *cmd, struct plugin 
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	err = nvme_fw_log(fd, &fw_log);
 	if (!err)
@@ -713,12 +693,10 @@ static int get_changed_ns_list_log(int argc, char **argv, struct command *cmd, s
 	const char *desc = "Retrieve Changed Namespaces log for the given device "\
 			"in either decoded format "\
 			"(default) or binary.";
-	const char *raw = "output in binary format";
 	enum nvme_print_flags flags;
 	int err, fd;
 
 	struct config {
-		int   raw_binary;
 		char *output_format;
 	};
 
@@ -728,7 +706,6 @@ static int get_changed_ns_list_log(int argc, char **argv, struct command *cmd, s
 
 	OPT_ARGS(opts) = {
 		OPT_FMT("output-format", 'o', &cfg.output_format, output_format),
-		OPT_FLAG("raw-binary",   'b', &cfg.raw_binary,    raw),
 		OPT_END()
 	};
 
@@ -739,8 +716,6 @@ static int get_changed_ns_list_log(int argc, char **argv, struct command *cmd, s
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	err = nvme_changed_ns_list_log(fd, &changed_ns_list_log);
 	if (!err)
@@ -763,7 +738,6 @@ static int get_pred_lat_per_nvmset_log(int argc, char **argv,
 			"page and prints it for the given device in either decoded " \
 			"format(default),json or binary.";
 	const char *nvmset_id = "NVM Set Identifier";
-	const char *raw = "use binary output";
 	struct nvme_predlat_per_nvmset_log_page plpns_log;
 	enum nvme_print_flags flags;
 	int err, fd;
@@ -771,7 +745,6 @@ static int get_pred_lat_per_nvmset_log(int argc, char **argv,
 	struct config {
 		__u16 nvmset_id;
 		char *output_format;
-		int raw_binary;
 	};
 
 	struct config cfg = {
@@ -782,7 +755,6 @@ static int get_pred_lat_per_nvmset_log(int argc, char **argv,
 	OPT_ARGS(opts) = {
 		OPT_UINT("nvmset-id", 	 'i', &cfg.nvmset_id,     nvmset_id),
 		OPT_FMT("output-format", 'o', &cfg.output_format, output_format),
-		OPT_FLAG("raw-binary",   'b', &cfg.raw_binary, 	  raw),
 		OPT_END()
 	};
 
@@ -793,8 +765,6 @@ static int get_pred_lat_per_nvmset_log(int argc, char **argv,
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	err = nvme_predictable_latency_per_nvmset_log(fd,
 		cfg.nvmset_id, &plpns_log);
@@ -822,7 +792,6 @@ static int get_pred_lat_event_agg_log(int argc, char **argv,
 	const char *log_entries = "Number of pending NVM Set" \
 			"log Entries list";
 	const char *rae = "Retain an Asynchronous Event";
-	const char *raw = "use binary output";
 	void *pea_log;
 	struct nvme_id_ctrl ctrl;
 	enum nvme_print_flags flags;
@@ -833,7 +802,6 @@ static int get_pred_lat_event_agg_log(int argc, char **argv,
 		__u64 log_entries;
 		bool rae;
 		char *output_format;
-		int raw_binary;
 	};
 
 	struct config cfg = {
@@ -846,7 +814,6 @@ static int get_pred_lat_event_agg_log(int argc, char **argv,
 		OPT_UINT("log-entries",  'e', &cfg.log_entries,   log_entries),
 		OPT_FLAG("rae",          'r', &cfg.rae,           rae),
 		OPT_FMT("output-format", 'o', &cfg.output_format, output_format),
-		OPT_FLAG("raw-binary",   'b', &cfg.raw_binary,    raw),
 		OPT_END()
 	};
 
@@ -857,8 +824,6 @@ static int get_pred_lat_event_agg_log(int argc, char **argv,
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	if (!cfg.log_entries) {
 		fprintf(stderr, "non-zero log-entries is required param\n");
@@ -911,7 +876,6 @@ static int get_persistent_event_log(int argc, char **argv,
 	const char *action = "action the controller shall take during"\
 			"processing this persistent log page command.";
 	const char *log_len = "number of bytes to retrieve";
-	const char *raw = "use binary output";
 	void *pevent_log_info;
 	struct nvme_persistent_event_log_head *pevent_log_head;
 	enum nvme_print_flags flags;
@@ -921,7 +885,6 @@ static int get_persistent_event_log(int argc, char **argv,
 	struct config {
 		__u8 action;
 		__u32 log_len;
-		int raw_binary;
 		char *output_format;
 	};
 
@@ -935,7 +898,6 @@ static int get_persistent_event_log(int argc, char **argv,
 		OPT_UINT("action",       'a', &cfg.action,        action),
 		OPT_UINT("log_len", 	 'l', &cfg.log_len,  	  log_len),
 		OPT_FMT("output-format", 'o', &cfg.output_format, output_format),
-		OPT_FLAG("raw-binary",   'b', &cfg.raw_binary,    raw),
 		OPT_END()
 	};
 
@@ -946,8 +908,6 @@ static int get_persistent_event_log(int argc, char **argv,
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	pevent_log_head = calloc(sizeof(*pevent_log_head), 1);
 	if (!pevent_log_head) {
@@ -1024,7 +984,6 @@ static int get_endurance_event_agg_log(int argc, char **argv,
 	const char *log_entries = "Number of pending Endurance Group " \
 			"Event log Entries list";
 	const char *rae = "Retain an Asynchronous Event";
-	const char *raw = "use binary output";
 	void *endurance_log;
 	struct nvme_id_ctrl ctrl;
 	enum nvme_print_flags flags;
@@ -1035,7 +994,6 @@ static int get_endurance_event_agg_log(int argc, char **argv,
 		__u64 log_entries;
 		bool rae;
 		char *output_format;
-		int raw_binary;
 	};
 
 	struct config cfg = {
@@ -1048,7 +1006,6 @@ static int get_endurance_event_agg_log(int argc, char **argv,
 		OPT_UINT("log-entries",  'e', &cfg.log_entries,   log_entries),
 		OPT_FLAG("rae",          'r', &cfg.rae,           rae),
 		OPT_FMT("output-format", 'o', &cfg.output_format, output_format),
-		OPT_FLAG("raw-binary",   'b', &cfg.raw_binary,    raw),
 		OPT_END()
 	};
 
@@ -1059,8 +1016,6 @@ static int get_endurance_event_agg_log(int argc, char **argv,
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	if (!cfg.log_entries) {
 		fprintf(stderr, "non-zero log-entries is required param\n");
@@ -1319,14 +1274,12 @@ ret:
 static int sanitize_log(int argc, char **argv, struct command *command, struct plugin *plugin)
 {
 	const char *desc = "Retrieve sanitize log and show it.";
-	const char *raw = "show log in binary format";
 	const char *human_readable = "show log in readable format";
 	struct nvme_sanitize_log_page sanitize_log;
 	enum nvme_print_flags flags;
 	int fd, err;
 
 	struct config {
-		int   raw_binary;
 		int   human_readable;
 		char *output_format;
 	};
@@ -1338,7 +1291,6 @@ static int sanitize_log(int argc, char **argv, struct command *command, struct p
 	OPT_ARGS(opts) = {
 		OPT_FMT("output-format",  'o', &cfg.output_format,  output_format),
 		OPT_FLAG("human-readable",'H', &cfg.human_readable, human_readable),
-		OPT_FLAG("raw-binary",    'b', &cfg.raw_binary,     raw),
 		OPT_END()
 	};
 
@@ -1349,8 +1301,6 @@ static int sanitize_log(int argc, char **argv, struct command *command, struct p
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 	if (cfg.human_readable)
 		flags |= VERBOSE;
 
@@ -1889,7 +1839,6 @@ int __id_ctrl(int argc, char **argv, struct command *cmd, struct plugin *plugin,
 		"binary format. May also return vendor-specific "\
 		"controller attributes in hex-dump if requested.";
 	const char *vendor_specific = "dump binary vendor field";
-	const char *raw = "show identify in binary format";
 	const char *human_readable = "show identify in readable format";
 	enum nvme_print_flags flags;
 	struct nvme_id_ctrl ctrl;
@@ -1897,7 +1846,6 @@ int __id_ctrl(int argc, char **argv, struct command *cmd, struct plugin *plugin,
 
 	struct config {
 		int vendor_specific;
-		int raw_binary;
 		int human_readable;
 		char *output_format;
 	};
@@ -1909,7 +1857,6 @@ int __id_ctrl(int argc, char **argv, struct command *cmd, struct plugin *plugin,
 	OPT_ARGS(opts) = {
 		OPT_FLAG("vendor-specific", 'v', &cfg.vendor_specific, vendor_specific),
 		OPT_FMT("output-format",    'o', &cfg.output_format,   output_format),
-		OPT_FLAG("raw-binary",      'b', &cfg.raw_binary,      raw),
 		OPT_FLAG("human-readable",  'H', &cfg.human_readable,  human_readable),
 		OPT_END()
 	};
@@ -1921,8 +1868,6 @@ int __id_ctrl(int argc, char **argv, struct command *cmd, struct plugin *plugin,
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 	if (cfg.vendor_specific)
 		flags |= VS;
 	if (cfg.human_readable)
@@ -1995,7 +1940,6 @@ static int ns_descs(int argc, char **argv, struct command *cmd, struct plugin *p
 	const char *desc = "Send Namespace Identification Descriptors command to the "\
 			    "given device, returns the namespace identification descriptors "\
 			    "of the specific namespace in either human-readable or binary format.";
-	const char *raw = "show descriptors in binary format";
 	const char *namespace_id = "identifier of desired namespace";
 	enum nvme_print_flags flags;
 	int err, fd;
@@ -2003,7 +1947,6 @@ static int ns_descs(int argc, char **argv, struct command *cmd, struct plugin *p
 
 	struct config {
 		__u32 namespace_id;
-		int raw_binary;
 		char *output_format;
 	};
 
@@ -2015,7 +1958,6 @@ static int ns_descs(int argc, char **argv, struct command *cmd, struct plugin *p
 	OPT_ARGS(opts) = {
 		OPT_UINT("namespace-id",  'n', &cfg.namespace_id,  namespace_id),
 		OPT_FMT("output-format",  'o', &cfg.output_format, output_format),
-		OPT_FLAG("raw-binary",    'b', &cfg.raw_binary,    raw),
 		OPT_END()
 	};
 
@@ -2026,8 +1968,6 @@ static int ns_descs(int argc, char **argv, struct command *cmd, struct plugin *p
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	if (!cfg.namespace_id) {
 		err = cfg.namespace_id = nvme_get_nsid(fd);
@@ -2065,7 +2005,6 @@ static int id_ns(int argc, char **argv, struct command *cmd, struct plugin *plug
 		"binary vendor-specific namespace attributes.";
 	const char *force = "Return this namespace, even if not attaced (1.2 devices only)";
 	const char *vendor_specific = "dump binary vendor fields";
-	const char *raw = "show identify in binary format";
 	const char *human_readable = "show identify in readable format";
 	const char *namespace_id = "identifier of desired namespace";
 
@@ -2076,7 +2015,6 @@ static int id_ns(int argc, char **argv, struct command *cmd, struct plugin *plug
 	struct config {
 		__u32 namespace_id;
 		int   vendor_specific;
-		int   raw_binary;
 		int   human_readable;
 		int   force;
 		char *output_format;
@@ -2091,7 +2029,6 @@ static int id_ns(int argc, char **argv, struct command *cmd, struct plugin *plug
 		OPT_UINT("namespace-id",    'n', &cfg.namespace_id,    namespace_id),
 		OPT_FLAG("force",           'f', &cfg.force,           force),
 		OPT_FLAG("vendor-specific", 'v', &cfg.vendor_specific, vendor_specific),
-		OPT_FLAG("raw-binary",      'b', &cfg.raw_binary,      raw),
 		OPT_FMT("output-format",    'o', &cfg.output_format,   output_format),
 		OPT_FLAG("human-readable",  'H', &cfg.human_readable,  human_readable),
 		OPT_END()
@@ -2104,8 +2041,6 @@ static int id_ns(int argc, char **argv, struct command *cmd, struct plugin *plug
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 	if (cfg.vendor_specific)
 		flags |= VS;
 	if (cfg.human_readable)
@@ -2238,7 +2173,6 @@ static int id_uuid(int argc, char **argv, struct command *cmd, struct plugin *pl
 	const char *desc = "Send an Identify UUID List command to the "\
 		"given device, returns list of supported Vendor Specific UUIDs "\
 		"in either human-readable or binary format.";
-	const char *raw = "show uuid in binary format";
 	const char *human_readable = "show uuid in readable format";
 
 	struct nvme_id_uuid_list uuid_list;
@@ -2246,7 +2180,6 @@ static int id_uuid(int argc, char **argv, struct command *cmd, struct plugin *pl
 	int err, fd;
 
 	struct config {
-		int   raw_binary;
 		int   human_readable;
 		char *output_format;
 	};
@@ -2257,7 +2190,6 @@ static int id_uuid(int argc, char **argv, struct command *cmd, struct plugin *pl
 
 	OPT_ARGS(opts) = {
 		OPT_FMT("output-format",   'o', &cfg.output_format,  output_format),
-		OPT_FLAG("raw-binary",     'b', &cfg.raw_binary,     raw),
 		OPT_FLAG("human-readable", 'H', &cfg.human_readable, human_readable),
 		OPT_END()
 	};
@@ -2269,8 +2201,6 @@ static int id_uuid(int argc, char **argv, struct command *cmd, struct plugin *pl
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 	if (cfg.human_readable)
 		flags |= VERBOSE;
 
@@ -4607,7 +4537,6 @@ static int resv_report(int argc, char **argv, struct command *cmd, struct plugin
 	const char *namespace_id = "identifier of desired namespace";
 	const char *numd = "number of dwords to transfer";
 	const char *cdw11 = "command dword 11 value";
-	const char *raw = "dump output in binary format";
 
 	struct nvme_reservation_status *status;
 	enum nvme_print_flags flags;
@@ -4617,7 +4546,6 @@ static int resv_report(int argc, char **argv, struct command *cmd, struct plugin
 		__u32 namespace_id;
 		__u32 numd;
 		__u32 cdw11;
-		int   raw_binary;
 		char *output_format;
 	};
 
@@ -4633,7 +4561,6 @@ static int resv_report(int argc, char **argv, struct command *cmd, struct plugin
 		OPT_UINT("numd",          'd', &cfg.numd,           numd),
 		OPT_UINT("cdw11",         'c', &cfg.cdw11,          cdw11),
 		OPT_FMT("output-format",  'o', &cfg.output_format,  output_format),
-		OPT_FLAG("raw-binary",    'b', &cfg.raw_binary,     raw),
 		OPT_END()
 	};
 
@@ -4644,8 +4571,6 @@ static int resv_report(int argc, char **argv, struct command *cmd, struct plugin
 	err = flags = validate_output_format(cfg.output_format);
 	if (flags < 0)
 		goto close_fd;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	if (!cfg.namespace_id) {
 		err = cfg.namespace_id = nvme_get_nsid(fd);
@@ -5244,7 +5169,6 @@ static int dir_receive(int argc, char **argv, struct command *cmd, struct plugin
 {
 	const char *desc = "Read directive parameters of the "\
 			    "specified directive type.";
-	const char *raw = "show directive in binary format";
 	const char *namespace_id = "identifier of desired namespace";
 	const char *data_len = "buffer len (if) data is returned";
 	const char *dtype = "directive type";
@@ -5266,7 +5190,6 @@ static int dir_receive(int argc, char **argv, struct command *cmd, struct plugin
 		__u8  dtype;
 		__u8  doper;
 		__u16 nsr; /* dw12 for NVME_DIR_ST_RCVOP_STATUS */
-		int  raw_binary;
 		int  human_readable;
 	};
 
@@ -5282,7 +5205,6 @@ static int dir_receive(int argc, char **argv, struct command *cmd, struct plugin
 	OPT_ARGS(opts) = {
 		OPT_UINT("namespace-id",  'n', &cfg.namespace_id,   namespace_id),
 		OPT_UINT("data-len",      'l', &cfg.data_len,       data_len),
-		OPT_FLAG("raw-binary",    'b', &cfg.raw_binary,     raw),
 		OPT_BYTE("dir-type",      'D', &cfg.dtype,          dtype),
 		OPT_SHRT("dir-spec",      'S', &cfg.dspec,          dspec),
 		OPT_BYTE("dir-oper",      'O', &cfg.doper,          doper),
@@ -5297,8 +5219,6 @@ static int dir_receive(int argc, char **argv, struct command *cmd, struct plugin
 
 	if (cfg.human_readable)
 		flags |= VERBOSE;
-	if (cfg.raw_binary)
-		flags = BINARY;
 
 	switch (cfg.dtype) {
 	case NVME_DIR_IDENTIFY:
