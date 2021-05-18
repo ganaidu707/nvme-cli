@@ -147,7 +147,7 @@ static int zns_mgmt_send(int argc, char **argv, struct command *cmd, struct plug
 	const char *zslba = "starting LBA of the zone for this command";
 	const char *select_all = "send command to all zones";
 
-	int err, fd;
+	int err = -1, fd;
 	char *command;
 
 	struct config {
@@ -203,7 +203,7 @@ static int get_zdes_bytes(int fd, __u32 nsid)
 	struct nvme_zns_id_ns ns;
 	struct nvme_id_ns id_ns;
 	__u8 lbaf;
-	int err;
+	int err = -1;
 
 	err = nvme_identify_ns(fd, nsid,  false, &id_ns);
 	if (err > 0){
@@ -276,7 +276,8 @@ static int zone_mgmt_send(int argc, char **argv, struct command *cmd, struct plu
 
 	if (!cfg.zsa) {
 		fprintf(stderr, "zone send action must be specified\n");
-		err = -EINVAL;
+		errno = EINVAL;
+		err = -1;
 		goto close_fd;
 	}
 
@@ -302,6 +303,7 @@ static int zone_mgmt_send(int argc, char **argv, struct command *cmd, struct plu
 			ffd = open(cfg.file, O_RDONLY);
 			if (ffd < 0) {
 				perror(cfg.file);
+				err = ffd;
 				goto free;
 			}
 		}
@@ -315,7 +317,8 @@ static int zone_mgmt_send(int argc, char **argv, struct command *cmd, struct plu
 		if (cfg.file || cfg.data_len) {
 			fprintf(stderr, 
 			"data, data_len only valid with set extended descriptor\n");
-			err = -EINVAL;
+			errno = EINVAL;
+			err = -1;
 			goto close_fd;
 		}
 	}
@@ -383,7 +386,7 @@ static int set_zone_desc(int argc, char **argv, struct command *cmd, struct plug
 	const char *zslba = "starting LBA of the zone for this command";
 	const char *data = "optional file for zone extention data (default stdin)";
 
-	int fd, ffd = STDIN_FILENO, err;
+	int fd, ffd = STDIN_FILENO, err = -1;
 	void *buf = NULL;
 	__u32 data_len;
 
@@ -427,7 +430,8 @@ static int set_zone_desc(int argc, char **argv, struct command *cmd, struct plug
 	buf = calloc(1, data_len);
 	if (!buf) {
 		perror("could not alloc memory for zone desc");
-		err = -ENOMEM;
+		errno = ENOMEM;
+		err = -1;
 		goto close_fd;
 	}
 
@@ -521,14 +525,16 @@ static int zone_mgmt_recv(int argc, char **argv, struct command *cmd, struct plu
 
 	if (cfg.zra == NVME_ZNS_ZRA_REPORT_ZONES && !cfg.data_len) {
 		fprintf(stderr, "error: data len is needed for NVME_ZRA_ZONE_REPORT\n");
-		err = -EINVAL;
+		errno = EINVAL;
+		err = -1;
 		goto close_fd;
 	}
 	if (cfg.data_len) {
 		data = calloc(1, cfg.data_len);
 		if (!data) {
 			perror("could not alloc memory for zone mgmt receive data");
-			err = -ENOMEM;
+			errno = ENOMEM;
+			err = -1;
 			goto close_fd;
 		}
 	}
@@ -640,7 +646,8 @@ static int report_zones(int argc, char **argv, struct command *cmd, struct plugi
 	report = nvme_alloc(report_size, &huge);
 	if (!report) {
 		perror("alloc");
-		err = -ENOMEM;
+		errno = ENOMEM;
+		err = -1;
 		goto close_fd;
 	}
 
@@ -755,6 +762,7 @@ static int zone_append(int argc, char **argv, struct command *cmd, struct plugin
 			"Data size:%#"PRIx64" not aligned to lba size:%#x\n",
 			(uint64_t)cfg.data_size, lba_size);
 		errno = EINVAL;
+		err = -1;
 		goto close_ns;
 	}
 
@@ -765,12 +773,14 @@ static int zone_append(int argc, char **argv, struct command *cmd, struct plugin
 			"Metadata size:%#"PRIx64" not aligned to metadata size:%#x\n",
 			(uint64_t)cfg.metadata_size, meta_size);
 		errno = EINVAL;
+		err = -1;
 		goto close_ns;
 	}
 
 	if (cfg.prinfo > 0xf) {
 	        fprintf(stderr, "Invalid value for prinfo:%#x\n", cfg.prinfo);
 		errno = EINVAL;
+		err = -1;
 		goto close_ns;
 	}
 
@@ -778,6 +788,7 @@ static int zone_append(int argc, char **argv, struct command *cmd, struct plugin
 		dfd = open(cfg.data, O_RDONLY);
 		if (dfd < 0) {
 			perror(cfg.data);
+			err = -1;
 			goto close_ns;
 		}
 	}
@@ -808,6 +819,7 @@ static int zone_append(int argc, char **argv, struct command *cmd, struct plugin
 		if (posix_memalign(&mbuf, getpagesize(), meta_size)) {
 			fprintf(stderr, "No memory for metadata size:%d\n",
 				meta_size);
+			errno = ENOMEM;
 			err = -1;
 			goto close_mfd;
 		}
