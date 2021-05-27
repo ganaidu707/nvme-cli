@@ -2359,11 +2359,7 @@ static int get_ns_id(int argc, char **argv, struct command *cmd, struct plugin *
 	int err = 0, nsid, fd;
 	const char *desc = "Get namespce ID of a the block device.";
 
-	OPT_ARGS(opts) = {
-		OPT_END()
-	};
-
-	err = fd = parse_and_open(argc, argv, desc, opts);
+	err = fd = parse_and_open(argc, argv, desc, NULL);
 	if (fd < 0)
 		goto ret;
 
@@ -3017,11 +3013,7 @@ static int subsystem_reset(int argc, char **argv, struct command *cmd, struct pl
 	const char *desc = "Resets the NVMe subsystem\n";
 	int err, fd;
 
-	OPT_ARGS(opts) = {
-		OPT_END()
-	};
-
-	err = fd = parse_and_open(argc, argv, desc, opts);
+	err = fd = parse_and_open(argc, argv, desc, NULL);
 	if (fd < 0)
 		goto ret;
 
@@ -3044,11 +3036,7 @@ static int reset(int argc, char **argv, struct command *cmd, struct plugin *plug
 	const char *desc = "Resets the NVMe controller\n";
 	int err, fd;
 
-	OPT_ARGS(opts) = {
-		OPT_END()
-	};
-
-	err = fd = parse_and_open(argc, argv, desc, opts);
+	err = fd = parse_and_open(argc, argv, desc, NULL);
 	if (fd < 0)
 		goto ret;
 
@@ -3066,11 +3054,7 @@ static int ns_rescan(int argc, char **argv, struct command *cmd, struct plugin *
 	const char *desc = "Rescans the NVMe namespaces\n";
 	int err, fd;
 
-	OPT_ARGS(opts) = {
-		OPT_END()
-	};
-
-	err = fd = parse_and_open(argc, argv, desc, opts);
+	err = fd = parse_and_open(argc, argv, desc, NULL);
 	if (fd < 0)
 		goto ret;
 
