@@ -4596,14 +4596,67 @@ void nvme_show_id_uuid_list(const struct nvme_id_uuid_list *uuid_list,
 	}
 }
 
-void nvme_show_id_iocs(struct nvme_id_iocs *iocs)
+static void nvme_show_iocs_vector(__u64 iocs_vec)
 {
-	__u16 i;
+	__u64 rsvd3 = iocs_vec >> 3;
+	__u8 zns_cmd_set = (iocs_vec >> 2) & 0x1;
+	__u8 rsvd1 = (iocs_vec >> 1) & 0x1;
+	__u8 nvm_cmd_set = iocs_vec & 0x1;
 
-	for (i = 0; i < 512; i++)
-		if (iocs->iocs[i])
-			printf("I/O Command Set Combination[%u]:%"PRIx64"\n", i,
+	if (rsvd3)
+		printf("  [63:3] : %#llx\tReserved3\n", rsvd3);
+	printf("  [2:2] : %#x\tZNS Command Set %sSelected\n",
+		zns_cmd_set, zns_cmd_set ? "" : "not ");
+	if (rsvd1)
+		printf("  [1:1] : %#x\tReserved1\n", rsvd1);
+	printf("  [0:0] : %#x\tNVM Command Set %sSelected\n",
+		nvm_cmd_set, nvm_cmd_set ? "" : "not ");
+	printf("\n");
+}
+
+static void json_id_iocs(struct nvme_id_iocs *iocs)
+{
+	struct json_object *root;
+	struct json_object *entries;
+	int i;
+
+	root = json_create_object();
+	entries = json_create_array();
+
+	for (i = 0; i < NVME_NUM_IOCS_COMBINATIONS; i++) {
+		if (iocs->iocs[i]) {
+			struct json_object *entry = json_create_object();
+			json_object_add_value_int(entry, "iocs",
+				le64_to_cpu(iocs->iocs[i]));
+			json_array_add_value_object(entries, entry);
+		}
+	}
+
+	json_object_add_value_array(root, "iocs_list", entries);
+	json_print_object(root, NULL);
+	printf("\n");
+	json_free_object(root);
+
+}
+
+void nvme_show_id_iocs(struct nvme_id_iocs *iocs, enum nvme_print_flags flags)
+{
+	if (flags & BINARY)
+		return d_raw((unsigned char *)iocs, sizeof(*iocs));
+	else if (flags & JSON)
+		return json_id_iocs(iocs);
+
+	bool human = flags & VERBOSE;
+	int i;
+
+	for (i = 0; i < NVME_NUM_IOCS_COMBINATIONS; i++) {
+		if (iocs->iocs[i]) {
+			printf("I/O Command Set Combination[%u]: %"PRIx64"\n", i,
 				(uint64_t)le64_to_cpu(iocs->iocs[i]));
+			if (human)
+				nvme_show_iocs_vector(le64_to_cpu(iocs->iocs[i]));
+		}
+	}
 }
 
 static const char *nvme_trtype_to_string(__u8 trtype)
@@ -5140,7 +5193,7 @@ void nvme_show_sanitize_log(struct nvme_sanitize_log_page *sanitize,
 	if (flags & BINARY)
 		return d_raw((unsigned char *)sanitize, sizeof(*sanitize));
 	else if (flags & JSON) {
-		return json_sanitize_log(sanitize, devname);	
+		return json_sanitize_log(sanitize, devname);    
 	}
 
 	printf("Sanitize Progress                      (SPROG) :  %u",
