@@ -2309,7 +2309,7 @@ static int id_uuid(int argc, char **argv, struct command *cmd, struct plugin *pl
 		perror("identify UUID list");
 close_fd:
 	close(fd);
-	return err;
+	return nvme_status_to_errno(err, false);
 }
 
 static int id_iocs(int argc, char **argv, struct command *cmd, struct plugin *plugin)
@@ -5117,7 +5117,7 @@ static int verify_cmd(int argc, char **argv, struct command *cmd, struct plugin 
 close_fd:
 	close(fd);
 err:
-	return err;
+	return nvme_status_to_errno(err, false);
 }
 
 static int sec_recv(int argc, char **argv, struct command *cmd, struct plugin *plugin)
