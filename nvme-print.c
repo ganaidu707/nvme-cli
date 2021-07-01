@@ -76,6 +76,8 @@ const char *nvme_cmd_to_string(int admin, __u8 opcode)
 		case nvme_admin_virtual_mgmt:	return "Virtualization Management";
 		case nvme_admin_nvme_mi_send:	return "NVMEe-MI Send";
 		case nvme_admin_nvme_mi_recv:	return "NVMEe-MI Receive";
+		case nvme_admin_capacity_mgmt:  return "Capacity Management Command";
+		case nvme_admin_lockdown_cmd:   return "Lockdown Command";
 		case nvme_admin_dbbuf:		return "Doorbell Buffer Config";
 		case nvme_admin_format_nvm:	return "Format NVM";
 		case nvme_admin_security_send:	return "Security Send";
