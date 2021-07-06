@@ -38,12 +38,14 @@ int nvme_passthru_io(int fd, __u8 opcode, __u8 flags, __u16 rsvd,
 		     void *metadata, __u32 timeout);
 
 int nvme_write_zeros(int fd, __u32 nsid, __u64 slba, __u16 nlb,
-		     __u16 control, __u32 reftag, __u16 apptag, __u16 appmask);
+		__u16 control, __u32 reftag, __u16 apptag, __u16 appmask,
+		__u64 storage_tag);
 
 int nvme_write_uncorrectable(int fd, __u32 nsid, __u64 slba, __u16 nlb);
 
 int nvme_verify(int fd, __u32 nsid, __u64 slba, __u16 nblocks,
-		__u16 control, __u32 reftag, __u16 apptag, __u16 appmask);
+		__u16 control, __u32 reftag, __u16 apptag, __u16 appmask,
+		__u64 storage_tag);
 
 int nvme_flush(int fd, __u32 nsid);
 
@@ -56,7 +58,7 @@ struct nvme_dsm_range *nvme_setup_dsm_range(int *ctx_attrs, int *llbas,
 int nvme_copy(int fd, __u32 nsid, struct nvme_copy_range *copy, __u64 sdlba,
 		__u16 nr, __u8 prinfor, __u8 prinfow, __u8 dtype, __u16 dspec,
 		__u8 format, int lr, int fua, __u32 ilbrt, __u16 lbatm,
-		__u16 lbat);
+		__u16 lbat, __u64 storage_tag);
 struct nvme_copy_range *nvme_setup_copy_range(int *nlbs, unsigned long long *slbas,
 		int *eilbrts, int *elbatms, int *elbats, __u16 nr);
 

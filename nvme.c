@@ -4171,6 +4171,8 @@ static int write_zeroes(int argc, char **argv, struct command *cmd, struct plugi
 	const char *ref_tag = "reference tag (for end to end PI)";
 	const char *app_tag_mask = "app tag mask (for end to end PI)";
 	const char *app_tag = "app tag (for end to end PI)";
+	const char *storage_tag = "storage tag, CDW2 and CDW3 (00:47) bits "\
+		"(for end to end PI)";
 	const char *deac = "Set DEAC bit, requesting controller to deallocate specified logical blocks";
 
 	struct config {
@@ -4181,6 +4183,7 @@ static int write_zeroes(int argc, char **argv, struct command *cmd, struct plugi
 		__u16 app_tag_mask;
 		__u16 block_count;
 		__u8  prinfo;
+		__u64 storage_tag;
 		int   deac;
 		int   limited_retry;
 		int   force_unit_access;
@@ -4193,6 +4196,7 @@ static int write_zeroes(int argc, char **argv, struct command *cmd, struct plugi
 		.ref_tag         = 0,
 		.app_tag_mask    = 0,
 		.app_tag         = 0,
+		.storage_tag	 = 0,
 	};
 
 	OPT_ARGS(opts) = {
@@ -4206,6 +4210,7 @@ static int write_zeroes(int argc, char **argv, struct command *cmd, struct plugi
 		OPT_UINT("ref-tag",           'r', &cfg.ref_tag,           ref_tag),
 		OPT_SHRT("app-tag-mask",      'm', &cfg.app_tag_mask,      app_tag_mask),
 		OPT_SHRT("app-tag",           'a', &cfg.app_tag,           app_tag),
+		OPT_SUFFIX("storage-tag",     'S', &cfg.storage_tag,       storage_tag),
 		OPT_END()
 	};
 
@@ -4236,7 +4241,7 @@ static int write_zeroes(int argc, char **argv, struct command *cmd, struct plugi
 	}
 
 	err = nvme_write_zeros(fd, cfg.namespace_id, cfg.start_block, cfg.block_count,
-			control, cfg.ref_tag, cfg.app_tag, cfg.app_tag_mask);
+			control, cfg.ref_tag, cfg.app_tag, cfg.app_tag_mask, cfg.storage_tag);
 	if (err < 0)
 		perror("write-zeroes");
 	else if (err != 0)
@@ -4379,6 +4384,8 @@ static int copy(int argc, char **argv, struct command *cmd, struct plugin *plugi
 	const char *d_dtype = "directive type (write part)";
 	const char *d_dspec = "directive specific (write part)";
 	const char *d_format = "source range entry format";
+	const char *d_storage_tag = "storage tag, CDW2 and CDW3 (00:47) bits "\
+		"(for end to end PI)";
 
 	int err = -1, fd;
 	uint16_t nr, nb, ns, nrts, natms, nats;
@@ -4402,6 +4409,7 @@ static int copy(int argc, char **argv, struct command *cmd, struct plugin *plugi
 		char  *elbats;
 		__u8  prinfow;
 		__u8  prinfor;
+		__u64 storage_tag;
 		int   lr;
 		int   fua;
 		__u8  dtype;
@@ -4411,6 +4419,7 @@ static int copy(int argc, char **argv, struct command *cmd, struct plugin *plugi
 
 	struct config cfg = {
 		.namespace_id = 0,
+		.storage_tag = 0,
 		.nlbs    = "",
 		.slbas   = "",
 		.eilbrts = "",
@@ -4433,6 +4442,7 @@ static int copy(int argc, char **argv, struct command *cmd, struct plugin *plugi
 		OPT_LIST("expected-app-tags",      'A', &cfg.elbats,  		d_elbats),
 		OPT_SHRT("app-tag-mask",           'm', &cfg.lbatm,   		d_lbatm),
 		OPT_LIST("expected-app-tag-masks", 'M', &cfg.elbatms, 		d_elbatms),
+		OPT_SUFFIX("storage-tag",     	   'E', &cfg.storage_tag,	d_storage_tag),
 		OPT_BYTE("dir-type",               'T', &cfg.dtype,   		d_dtype),
 		OPT_SHRT("dir-spec",               'S', &cfg.dspec,   		d_dspec),
 		OPT_BYTE("format",                 'F', &cfg.format,  		d_format),
@@ -4477,7 +4487,7 @@ static int copy(int argc, char **argv, struct command *cmd, struct plugin *plugi
 
 	err = nvme_copy(fd, cfg.namespace_id, copy, cfg.sdlba, nr, cfg.prinfor,
 			cfg.prinfow, cfg.dtype, cfg.dspec, cfg.format, cfg.lr,
-			cfg.fua, cfg.ilbrt, cfg.lbatm, cfg.lbat);
+			cfg.fua, cfg.ilbrt, cfg.lbatm, cfg.lbat, cfg.storage_tag);
 	if (err < 0)
 		perror("NVMe Copy");
 	else if (err != 0)
@@ -5104,8 +5114,8 @@ static int submit_io(int opcode, char *command, const char *desc,
 		goto free_mbuffer;
 
 	gettimeofday(&start_time, NULL);
-	err = nvme_io(fd, opcode, cfg.start_block, cfg.block_count, control, dsmgmt,
-			cfg.ref_tag, cfg.app_tag, cfg.app_tag_mask, buffer, mbuffer);
+	err = nvme_io(fd, opcode, cfg.start_block, cfg.block_count, control,
+			dsmgmt, cfg.ref_tag, cfg.app_tag, cfg.app_tag_mask, buffer, mbuffer);
 	gettimeofday(&end_time, NULL);
 	if (cfg.latency)
 		printf(" latency: %s: %llu us\n",
@@ -5182,6 +5192,8 @@ static int verify_cmd(int argc, char **argv, struct command *cmd, struct plugin 
 	const char *ref_tag = "reference tag (for end to end PI)";
 	const char *app_tag_mask = "app tag mask (for end to end PI)";
 	const char *app_tag = "app tag (for end to end PI)";
+	const char *storage_tag = "storage tag, CDW2 and CDW3 (00:47) bits "\
+		"(for end to end PI)";
 
 	struct config {
 		__u64 start_block;
@@ -5191,6 +5203,7 @@ static int verify_cmd(int argc, char **argv, struct command *cmd, struct plugin 
 		__u16 app_tag_mask;
 		__u16 block_count;
 		__u8  prinfo;
+		__u64 storage_tag;
 		int   limited_retry;
 		int   force_unit_access;
 	};
@@ -5205,6 +5218,7 @@ static int verify_cmd(int argc, char **argv, struct command *cmd, struct plugin 
 		.app_tag_mask      = 0,
 		.limited_retry     = 0,
 		.force_unit_access = 0,
+		.storage_tag	   = 0,
 	};
 
 	OPT_ARGS(opts) = {
@@ -5217,6 +5231,7 @@ static int verify_cmd(int argc, char **argv, struct command *cmd, struct plugin 
 		OPT_UINT("ref-tag",           'r', &cfg.ref_tag,           ref_tag),
 		OPT_SHRT("app-tag",           'a', &cfg.app_tag,           app_tag),
 		OPT_SHRT("app-tag-mask",      'm', &cfg.app_tag_mask,      app_tag_mask),
+		OPT_SUFFIX("storage-tag",     'S', &cfg.storage_tag,       storage_tag),
 		OPT_END()
 	};
 
@@ -5246,7 +5261,7 @@ static int verify_cmd(int argc, char **argv, struct command *cmd, struct plugin 
 	}
 
 	err = nvme_verify(fd, cfg.namespace_id, cfg.start_block, cfg.block_count,
-				control, cfg.ref_tag, cfg.app_tag, cfg.app_tag_mask);
+				control, cfg.ref_tag, cfg.app_tag, cfg.app_tag_mask, cfg.storage_tag);
 	if (err < 0)
 		perror("verify");
 	else if (err != 0)

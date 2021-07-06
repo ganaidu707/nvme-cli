@@ -146,11 +146,14 @@ int nvme_io(int fd, __u8 opcode, __u64 slba, __u16 nblocks, __u16 control,
 }
 
 int nvme_verify(int fd, __u32 nsid, __u64 slba, __u16 nblocks,
-		__u16 control, __u32 reftag, __u16 apptag, __u16 appmask)
+		__u16 control, __u32 reftag, __u16 apptag, __u16 appmask,
+		__u64 storage_tag)
 {
 	struct nvme_passthru_cmd cmd = {
 		.opcode		= nvme_cmd_verify,
 		.nsid		= nsid,
+		.cdw2		= storage_tag & 0xffffffff,
+		.cdw3		= (storage_tag >> 32) & 0xffff,
 		.cdw10		= slba & 0xffffffff,
 		.cdw11		= slba >> 32,
 		.cdw12		= nblocks | (control << 16),
@@ -174,11 +177,14 @@ int nvme_passthru_io(int fd, __u8 opcode, __u8 flags, __u16 rsvd,
 }
 
 int nvme_write_zeros(int fd, __u32 nsid, __u64 slba, __u16 nlb,
-		     __u16 control, __u32 reftag, __u16 apptag, __u16 appmask)
+		     __u16 control, __u32 reftag, __u16 apptag, __u16 appmask,
+			 __u64 storage_tag)
 {
 	struct nvme_passthru_cmd cmd = {
 		.opcode		= nvme_cmd_write_zeroes,
 		.nsid		= nsid,
+		.cdw2		= storage_tag & 0xffffffff,
+		.cdw3		= (storage_tag >> 32) & 0xffff,
 		.cdw10		= slba & 0xffffffff,
 		.cdw11		= slba >> 32,
 		.cdw12		= nlb | (control << 16),
@@ -249,7 +255,7 @@ struct nvme_dsm_range *nvme_setup_dsm_range(int *ctx_attrs, int *llbas,
 int nvme_copy(int fd, __u32 nsid, struct nvme_copy_range *copy, __u64 sdlba,
 		__u16 nr, __u8 prinfor, __u8 prinfow, __u8 dtype, __u16 dspec,
 		__u8 format, int lr, int fua, __u32 ilbrt, __u16 lbatm,
-		__u16 lbat)
+		__u16 lbat, __u64 storage_tag)
 {
 	__u32 cdw12 = ((nr - 1) & 0xff) | ((format & 0xf) <<  8) |
 		((prinfor & 0xf) << 12) | ((dtype & 0xf) << 20) |
@@ -261,6 +267,8 @@ int nvme_copy(int fd, __u32 nsid, struct nvme_copy_range *copy, __u64 sdlba,
 		.nsid           = nsid,
 		.addr           = (__u64)(uintptr_t)copy,
 		.data_len       = nr * sizeof(*copy),
+		.cdw2			= storage_tag & 0xffffffff,
+		.cdw3			= (storage_tag >> 32) & 0xffff,
 		.cdw10          = sdlba & 0xffffffff,
 		.cdw11          = sdlba >> 32,
 		.cdw12          = cdw12,

@@ -762,6 +762,7 @@ nvme-copy(1) Manual Page
                         [--expected-app-tags=&lt;apptag,&gt; | -A &lt;apptag,&gt;]
                         [--app-mask=&lt;appmask&gt; | -m &lt;appmask&gt;]
                         [--expected-app-masks=&lt;appmask,&gt; | -M &lt;appmask,&gt;]
+                        [--storage-tag&lt;storage-tag&gt; | -E &lt;storage-tag&gt;]
                         [--dir-type=&lt;type&gt; | -T &lt;type&gt;]
                         [--dir-spec=&lt;spec&gt; | -S &lt;spec&gt;]
                         [--format=&lt;entry-format&gt; | -F &lt;entry-format&gt;]</pre>
@@ -924,6 +925,18 @@ logical block ranges to a single consecutive destination logical block range.</p
 </p>
 </dd>
 <dt class="hdlist1">
+--storage-tag=&lt;storage-tag&gt;
+</dt>
+<dt class="hdlist1">
+-E &lt;storage-tag&gt;
+</dt>
+<dd>
+<p>
+        Variable Sized Expected Logical Block Storage Tag(ELBST) and Expected Logical
+        Block Reference Tag (ELBRT), CDW2 and CDW3 (00:47) bits.
+</p>
+</dd>
+<dt class="hdlist1">
 --dir-type=&lt;type&gt;
 </dt>
 <dt class="hdlist1">
@@ -982,7 +995,7 @@ logical block ranges to a single consecutive destination logical block range.</p
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2020-05-06 10:35:20 CEST
+ 2021-07-07 23:04:56 IST
 </div>
 </div>
 </body>

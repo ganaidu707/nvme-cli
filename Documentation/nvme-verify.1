@@ -41,6 +41,7 @@ nvme-verify \- Send an NVMe Verify command, return results
             [\-\-ref\-tag=<reftag> | \-r <reftag>]
             [\-\-app\-tag\-mask=<appmask> | \-m <appmask>]
             [\-\-app\-tag=<apptag> | \-a <apptag>]
+            [\-\-storage\-tag<storage\-tag> | \-S <storage\-tag>]
 .fi
 .SH "DESCRIPTION"
 .sp
@@ -130,6 +131,11 @@ Optional application tag mask when used with protection information\&.
 \-\-app\-tag=<apptag>, \-a <apptag>
 .RS 4
 Optional application tag when used with protection information\&.
+.RE
+.PP
+\-\-storage\-tag=<storage\-tag>, \-n <storage\-tag>
+.RS 4
+Variable Sized Expected Logical Block Storage Tag(ELBST) and Expected Logical Block Reference Tag (ELBRT), CDW2 and CDW3 (00:47) bits\&.
 .RE
 .SH "EXAMPLES"
 .sp
